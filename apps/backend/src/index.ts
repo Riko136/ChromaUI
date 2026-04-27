@@ -14,7 +14,7 @@ app.use('/api/connect', connectRouter);
 
 app.use('/api/collections', (_req, res, next) => {
   if (!isConnected()) {
-    res.status(401).json({ error: 'Not connected to ChromaDB' });
+    res.status(401).json({ error: 'ChromaDB not responding' });
     return;
   }
   next();

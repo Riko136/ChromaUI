@@ -1,5 +1,6 @@
 {
-  "name": "chromaui",
+  "name": "@chromaui/backend",
+  "private": true,
   "version": "1.0.0",
   "description": "",
   "license": "ISC",
@@ -9,7 +10,7 @@
   "scripts": {
     "build": "tsc",
     "start": "node dist/index.js",
-    "dev": "ts-node src/index.ts",
+    "dev": "tsx watch src/index.ts",
     "prestart": "npm run build"
   },
   "dependencies": {
@@ -20,10 +21,10 @@
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
-    "ts-node": "^10.9.2",
     "typescript": "^6.0.3"
   },
   "devDependencies": {
-    "@types/cors": "^2.8.19"
+    "@types/cors": "^2.8.19",
+    "tsx": "^4.20.0"
   }
 }

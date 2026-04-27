@@ -34,6 +34,6 @@ export function isConnected(): boolean {
 }
 
 export function getClient(): ChromaClient {
-  if (!client) throw new Error('Not connected to ChromaDB');
+  if (!client) throw new Error('No client found');
   return client;
 }

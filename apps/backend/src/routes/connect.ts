@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { connect, getClient, isConnected } from '../chroma.js';
+import { connect, connectToCloud, getClient, isConnected } from '../chroma.js';
 
 const router = Router();
 
@@ -15,9 +15,21 @@ router.post('/', async (req, res) => {
     return;
   }
 
-  connect({ url, tenant, database });
+  try{
+    connect({ url, tenant, database });
+  }catch{
+    res.status(401).json({ error: 'failed to connect to ChromaDB server' });
+  }
 
 
+});
+
+router.post('/cloud', async (req, res) => {
+  try{
+    connectToCloud(); 
+  } catch{
+    res.status(401).json({ error: 'failed to connect to ChromaDB Cloud' });
+  }
 });
 
 
