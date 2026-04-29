@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { useNavigate } from "react-router"
 import { useForm, Controller } from "react-hook-form"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -37,6 +38,7 @@ function ConnectForm() {
 
   const isCloud = watch("isCloud")
   const [connectError, setConnectError] = useState(null)
+  const navigate = useNavigate()
 
   const onValid = async (data) => {
     setConnectError(null)
@@ -45,7 +47,7 @@ function ConnectForm() {
       ? { apikey: data.apikey, tenant: data.tenant, database: data.database }
       : { url: data.address, tenant: data.tenant, database: data.database }
 
-      const res = await fetch(`http://localhost:3000${path}`, {
+      const res = await fetch(path, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
@@ -55,7 +57,7 @@ function ConnectForm() {
         setConnectError(error ?? res.statusText)
         return
       }
-      console.log("Connected")
+      navigate("/dashboard")
 
   }
 

@@ -5,7 +5,13 @@ const router = Router();
 
 router.get('/', async (_req, res) => {
   const collections = await getClient().listCollections();
-  res.json(collections);
+  res.json(
+    collections.map((c) => ({
+      id: c.id,
+      name: c.name,
+      metadata: c.metadata,
+    })),
+  );
 });
 
 router.post('/', async (req, res) => {

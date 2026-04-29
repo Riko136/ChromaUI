@@ -1,14 +1,17 @@
 
 import './App.css'
-import ConnectForm from './connectForm'
+import ConnectForm from './pages/connectForm'
+import Dashboard from './pages/dashboard'
+import {Routes, Route } from "react-router";
 
 function App() {
 
   return (
-    <>
-    <ConnectForm>
-    </ConnectForm>
-    </>
+    <Routes>
+      <Route path='/' element={<ConnectForm/>}/>
+      <Route path='/dashboard' element={<Dashboard/>}/>
+    </Routes>
+
   )
 }
 
