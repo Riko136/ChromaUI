@@ -1,6 +1,6 @@
 
 import './App.css'
-import ConnectForm from './login'
+import ConnectForm from './connectForm'
 
 function App() {
 

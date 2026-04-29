@@ -1,32 +1,33 @@
 import { Router } from 'express';
-import { connect, connectToCloud, getClient, isConnected } from '../chroma.js';
+import { connect, connectToCloud, getClient } from '../chroma.js';
 
 const router = Router();
 
-router.get('/', (_req, res) => {
-  res.json({ connected: isConnected() });
-});
+// router.get('/', (_req, res) => {
+//   res.json({ connected: isConnected() });
+// });
 
 router.post('/', async (req, res) => {
   const { url, tenant, database } = req.body;
 
-  if (!url || !tenant || !database) {
-    res.status(400).json({ error: 'all fields are required' });
-    return;
-  }
-
   try{
     connect({ url, tenant, database });
+    await getClient().listCollections();
+    res.sendStatus(200)
   }catch{
-    res.status(401).json({ error: 'failed to connect to ChromaDB server' });
+    res.status(401).json({ error: 'failed to connect to ChromaDB instance' });
   }
 
 
 });
 
 router.post('/cloud', async (req, res) => {
+  const { apikey, tenant, database } = req.body;
+
   try{
-    connectToCloud(); 
+    connectToCloud({apikey, tenant, database});
+    await getClient().listCollections();
+    res.sendStatus(200);
   } catch{
     res.status(401).json({ error: 'failed to connect to ChromaDB Cloud' });
   }
