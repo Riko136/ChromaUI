@@ -15,9 +15,14 @@ router.get('/', async (_req, res) => {
 });
 
 router.post('/', async (req, res) => {
-  const { name, metadata } = req.body;
-  const collection = await getClient().createCollection({ name, metadata });
-  res.status(201).json({ name: collection.name, metadata: collection.metadata });
+  try{
+    const { name, metadata } = req.body;
+    const collection = await getClient().createCollection({ name, metadata });
+    res.status(201).json({ name: collection.name, metadata: collection.metadata });
+  } catch(error: any){
+    res.status(500).json({error: error.message})
+  }
+
 });
 
 router.delete('/:name', async (req, res) => {

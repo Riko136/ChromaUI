@@ -116,7 +116,9 @@ function ConnectForm() {
                 data-disabled={!isCloud}
                 data-invalid={errors.apikey}
               >
-                <FieldLabel htmlFor="apikey">API key</FieldLabel>
+                <FieldLabel htmlFor="apikey">
+                  API key<span className="text-destructive">*</span>
+                </FieldLabel>
                 <Input
                   id="apikey"
                   type="text"
@@ -133,7 +135,9 @@ function ConnectForm() {
                 data-disabled={isCloud}
                 data-invalid={errors.address}
               >
-                <FieldLabel htmlFor="address">IP Address</FieldLabel>
+                <FieldLabel htmlFor="address">
+                  IP Address<span className="text-destructive">*</span>
+                </FieldLabel>
                 <Input
                   id="address"
                   type="text"

@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { Database } from "lucide-react"
+import { Database, Plus } from "lucide-react"
 import {
   Sidebar,
   SidebarContent,
@@ -14,12 +14,38 @@ import {
   SidebarMenuSkeleton,
   SidebarProvider,
   SidebarTrigger,
+  SidebarGroupAction
 } from "@/components/ui/sidebar"
-import { useCollections } from "@/lib/queries"
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuSeparator,
+  ContextMenuTrigger,
+} from "@/components/ui/context-menu"
+import { useCollections, useDeleteCollection } from "@/lib/queries"
+import CollectionDialog from "@/components/CollectionDialog"
 
 function Dashboard() {
   const [selected, setSelected] = useState(null)
+  const [createOpen, setCreateOpen] = useState(false)
+  const [mode, setMode] = useState("")
   const { data: collections, isLoading, isError, error } = useCollections()
+  const deleteCollection = useDeleteCollection()
+
+  const handleDelete = (name) => {
+    if (!window.confirm(`Delete collection "${name}"? This cannot be undone.`)) return
+    deleteCollection.mutate(name, {
+      onSuccess: () => {
+        if (selected === name) setSelected(null)
+      },
+    })
+  }
+
+  const handleCollectionAction = (mode) => {
+    setMode(mode)
+    setCreateOpen(true)
+  }
 
   return (
     <SidebarProvider>
@@ -33,6 +59,12 @@ function Dashboard() {
         <SidebarContent>
           <SidebarGroup>
             <SidebarGroupLabel>Collections</SidebarGroupLabel>
+            <SidebarGroupAction
+              title="Add collection"
+              onClick={() => handleCollectionAction("create")}
+            >
+              <Plus /> <span className="sr-only">Add collection</span>
+            </SidebarGroupAction>
             <SidebarGroupContent>
               <SidebarMenu>
                 {isLoading &&
@@ -57,12 +89,35 @@ function Dashboard() {
                 )}
                 {collections?.map((c) => (
                   <SidebarMenuItem key={c.id}>
-                    <SidebarMenuButton
-                      isActive={selected === c.name}
-                      onClick={() => setSelected(c.name)}
-                    >
-                      <span className="truncate">{c.name}</span>
-                    </SidebarMenuButton>
+                    <ContextMenu>
+                      <ContextMenuTrigger>
+                        <SidebarMenuButton
+                          isActive={selected?.name === c.name}
+                          onClick={() => setSelected(c)}
+                        >
+                          <span className="truncate">{c.name}</span>
+                        </SidebarMenuButton>
+                      </ContextMenuTrigger>
+                      <ContextMenuContent className="w-48">
+                        <ContextMenuItem
+                          onClick={
+                            () => {
+                              setSelected(c)
+                              handleCollectionAction("edit")
+                            }
+                          }
+                        >
+                          Collection Settings
+                        </ContextMenuItem>
+                        <ContextMenuSeparator />
+                        <ContextMenuItem
+                          variant="destructive"
+                          onClick={() => handleDelete(c.name)}
+                        >
+                          Delete Collection
+                        </ContextMenuItem>
+                      </ContextMenuContent>
+                    </ContextMenu>
                   </SidebarMenuItem>
                 ))}
               </SidebarMenu>
@@ -74,13 +129,13 @@ function Dashboard() {
         <header className="flex h-12 items-center gap-2 border-b px-4">
           <SidebarTrigger />
           <span className="text-sm font-medium">
-            {selected ?? "Select a collection"}
+            {selected?.name ?? "Select a collection"}
           </span>
         </header>
         <main className="p-4">
           {selected ? (
             <p className="text-sm text-muted-foreground">
-              Items for <span className="font-medium">{selected}</span> will go here.
+              Items for <span className="font-medium">{selected.name}</span> will go here.
             </p>
           ) : (
             <p className="text-sm text-muted-foreground">
@@ -89,6 +144,7 @@ function Dashboard() {
           )}
         </main>
       </SidebarInset>
+      <CollectionDialog open={createOpen} onOpenChange={setCreateOpen} mode={mode} initial={selected} />
     </SidebarProvider>
   )
 }
