@@ -25,6 +25,24 @@ router.post('/', async (req, res) => {
 
 });
 
+router.patch('/:name', async (req, res) => {
+  try {
+    const { name: newName, metadata } = req.body;
+    const collection = await getClient().getCollection({ name: req.params.name });
+    await collection.modify({
+      ...(newName !== undefined && { name: newName }),
+      ...(metadata !== undefined && { metadata }),
+    });
+    res.json({
+      id: collection.id,
+      name: collection.name,
+      metadata: collection.metadata,
+    });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 router.delete('/:name', async (req, res) => {
   await getClient().deleteCollection({ name: req.params.name });
   res.status(204).send();

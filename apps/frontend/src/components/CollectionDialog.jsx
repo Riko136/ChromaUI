@@ -3,19 +3,21 @@ import { useForm } from "react-hook-form"
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Field, FieldGroup, FieldLabel, FieldError, FieldDescription } from "@/components/ui/field"
-import { useCreateCollection } from "@/lib/queries"
+import { Field, FieldGroup, FieldLabel, FieldError } from "@/components/ui/field"
+import { useCreateCollection, useUpdateCollection } from "@/lib/queries"
 import { Textarea } from "@/components/ui/textarea"
 
 function CollectionDialog({ open, onOpenChange, mode, initial }) {
   const createCollection = useCreateCollection()
+  const updateCollection = useUpdateCollection()
+  const mutation = mode === "edit" ? updateCollection : createCollection
+
   const {
     register,
     handleSubmit,
@@ -28,17 +30,15 @@ function CollectionDialog({ open, onOpenChange, mode, initial }) {
       }
     })
 
-
-  
   useEffect(() => {
     if (!open) {
       reset()
-      createCollection.reset()
+      mutation.reset()
       return
     }
     reset({
       name: mode === "edit" ? initial?.name ?? "" : "",
-      metadata: mode === "edit" ? initial?.metadata ?? "" : "",
+      metadata: mode === "edit" ? JSON.stringify(initial?.metadata) ?? "" : "",
     })
   }, [open])
 
@@ -46,7 +46,10 @@ function CollectionDialog({ open, onOpenChange, mode, initial }) {
 
   const createCollectionHandler = async ({ name, metadata}) => {
     
-    await createCollection.mutateAsync({ name: name.trim(), metadata: metadata })
+    await createCollection.mutateAsync({ 
+      name: name.trim(), 
+      metadata: metadata ? JSON.parse(metadata.trim()) : undefined
+    })
     onOpenChange(false)
 
 
@@ -54,13 +57,17 @@ function CollectionDialog({ open, onOpenChange, mode, initial }) {
 
   const editCollectionHandler = async({name, metadata}) => {
 
-    await editCollection.mutateAsync({name: name.trim(), metadata: metadata})
+    await updateCollection.mutateAsync({
+      originalName: initial.name,
+      name: name.trim(), 
+      metadata: metadata ? JSON.parse(metadata.trim()) : undefined
+    })
     
   }
 
-  const callBackDecider = () => {
-    if(mode === "edit") editCollectionHandler()
-    else createCollectionHandler()
+  const callBackDecider = (name, metadata) => {
+    if(mode === "edit") editCollectionHandler(name, metadata)
+    else createCollectionHandler(name, metadata)
   }
 
   return (
@@ -90,17 +97,21 @@ function CollectionDialog({ open, onOpenChange, mode, initial }) {
               />
               <FieldError>{errors.name?.message}</FieldError>
             </Field>
-            <Field>
+            <Field data-invalid={errors.metadata}>
               <FieldLabel htmlFor="metadata">Metadata</FieldLabel>
               <Textarea 
                 id="metadata"
                 placeholder="Collection metadata"
-                {...register("metadata")}
-              />
-              <FieldDescription>Make sure to enter a valid JSON</FieldDescription>
+                {...register("metadata", {
+                  validate: (v) => {
+                    if(!v.trim()) return true
+                    try {JSON.parse(v); return true}
+                    catch {return "Must be valid JSON"}
+                  }})}/>
+              <FieldError>{errors.metadata?.message}</FieldError>
             </Field>
-            {createCollection.isError && (
-              <FieldError>{createCollection.error.message}</FieldError>
+            {mutation.isError && (
+              <FieldError>{mutation.error.message}</FieldError>
             )}
           </FieldGroup>
         </form>
@@ -109,14 +120,14 @@ function CollectionDialog({ open, onOpenChange, mode, initial }) {
             type="button"
             variant="outline"
             onClick={() => onOpenChange(false)}
-            disabled={createCollection.isPending}
+            disabled={mutation.isPending}
           >
             Cancel
           </Button>
           <Button
             type="submit"
             form="create-collection"
-            disabled={createCollection.isPending}
+            disabled={mutation.isPending}
           >
             {mode === "edit" ? "Save Changes" : "Create"}
           </Button>

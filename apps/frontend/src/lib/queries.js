@@ -84,6 +84,21 @@ export function useCreateCollection() {
   })
 }
 
+export function useUpdateCollection() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ originalName, name, metadata }) =>
+      request(
+        `/api/collections/${encodeURIComponent(originalName)}`,
+        jsonInit("PATCH", { name, metadata }),
+      ),
+    onSuccess: (_data, { originalName }) => {
+      qc.invalidateQueries({ queryKey: keys.collections })
+      qc.invalidateQueries({ queryKey: keys.items(originalName) })
+    },
+  })
+}
+
 export function useDeleteCollection() {
   const qc = useQueryClient()
   return useMutation({
