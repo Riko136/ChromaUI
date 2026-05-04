@@ -1,4 +1,3 @@
-import { useState } from "react"
 import { Database, Plus } from "lucide-react"
 import {
   Sidebar,
@@ -7,13 +6,10 @@ import {
   SidebarGroupContent,
   SidebarGroupLabel,
   SidebarHeader,
-  SidebarInset,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarMenuSkeleton,
-  SidebarProvider,
-  SidebarTrigger,
   SidebarGroupAction
 } from "@/components/ui/sidebar"
 import {
@@ -24,12 +20,9 @@ import {
   ContextMenuTrigger,
 } from "@/components/ui/context-menu"
 import { useCollections, useDeleteCollection } from "@/lib/queries"
-import CollectionDialog from "@/components/CollectionDialog"
 
-function Dashboard() {
-  const [selected, setSelected] = useState(null)
-  const [createOpen, setCreateOpen] = useState(false)
-  const [mode, setMode] = useState("")
+
+function AppSidebar({ setCreateOpen, setMode, selected, setSelected }) {
   const { data: collections, isLoading, isError, error } = useCollections()
   const deleteCollection = useDeleteCollection()
 
@@ -48,7 +41,7 @@ function Dashboard() {
   }
 
   return (
-    <SidebarProvider>
+    
       <Sidebar>
         <SidebarHeader className="px-3 py-2">
           <div className="flex items-center gap-2">
@@ -125,28 +118,12 @@ function Dashboard() {
           </SidebarGroup>
         </SidebarContent>
       </Sidebar>
-      <SidebarInset>
-        <header className="flex h-12 items-center gap-2 border-b px-4">
-          <SidebarTrigger />
-          <span className="text-sm font-medium">
-            {selected?.name ?? "Select a collection"}
-          </span>
-        </header>
-        <main className="p-4">
-          {selected ? (
-            <p className="text-sm text-muted-foreground">
-              Items for <span className="font-medium">{selected.name}</span> will go here.
-            </p>
-          ) : (
-            <p className="text-sm text-muted-foreground">
-              Pick a collection from the sidebar to view its contents.
-            </p>
-          )}
-        </main>
-      </SidebarInset>
-      <CollectionDialog open={createOpen} onOpenChange={setCreateOpen} mode={mode} initial={selected} />
-    </SidebarProvider>
+
+      
+      
+      
+    
   )
 }
 
-export default Dashboard
+export default AppSidebar
