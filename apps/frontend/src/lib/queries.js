@@ -39,12 +39,12 @@ export function useCollections() {
   })
 }
 
-export function useItems(name, { limit = 50, offset = 0 } = {}) {
+export function useItems(name) {
   return useQuery({
-    queryKey: keys.items(name, { limit, offset }),
+    queryKey: keys.items(name),
     queryFn: () =>
       request(
-        `/api/collections/${encodeURIComponent(name)}/items?limit=${limit}&offset=${offset}`,
+        `/api/collections/${encodeURIComponent(name)}/items?`,
       ),
     enabled: !!name,
     placeholderData: keepPreviousData,

@@ -4,12 +4,12 @@ import { getClient } from '../chroma.js';
 const router = Router();
 
 router.get('/:name/items', async (req, res) => {
-  const limit = parseInt((req.query.limit as string) ?? '50');
-  const offset = parseInt((req.query.offset as string) ?? '0');
+  // const limit = parseInt((req.query.limit as string) ?? '50');
+  // const offset = parseInt((req.query.offset as string) ?? '0');
   const collection = await getClient().getCollection({ name: req.params.name });
   const result = await collection.get({
-    limit,
-    offset,
+    // limit,
+    // offset,
     include: ['documents', 'metadatas', 'embeddings'],
   });
   res.json(result);
