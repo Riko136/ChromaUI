@@ -38,7 +38,7 @@ function CollectionDialog({ open, onOpenChange, mode, initial }) {
     }
     reset({
       name: mode === "edit" ? initial?.name ?? "" : "",
-      metadata: mode === "edit" ? JSON.stringify(initial?.metadata) ?? "" : "",
+      metadata: mode === "edit" ? JSON.stringify(initial?.metadata, null , 2) ?? "" : "",
     })
   }, [open])
 

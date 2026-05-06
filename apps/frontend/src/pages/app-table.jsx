@@ -9,6 +9,8 @@ import {
   TableRow,
 } from "@/components/ui/table"
 
+import {cn} from "@/lib/utils"
+
 export default function AppTable({ table, isLoading, isError, error }) {
   if (isLoading) {
     return <p className="p-4 text-sm text-muted-foreground">Loading…</p>
@@ -20,8 +22,11 @@ export default function AppTable({ table, isLoading, isError, error }) {
   const columnCount = table.getAllLeafColumns().length
 
   return (
-    <div className="overflow-hidden">
-      <Table className="table-fixed w-full">
+
+      <Table
+        className="table-fixed"
+        style={{ width: table.getTotalSize() }}
+      >
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow key={headerGroup.id}>
@@ -29,6 +34,7 @@ export default function AppTable({ table, isLoading, isError, error }) {
                 <TableHead
                   key={header.id}
                   style={{ width: header.column.getSize() }}
+                  className={header.column.columnDef.meta?.className}
                 >
                   {header.isPlaceholder
                     ? null
@@ -49,7 +55,7 @@ export default function AppTable({ table, isLoading, isError, error }) {
                 data-state={row.getIsSelected() && "selected"}
               >
                 {row.getVisibleCells().map((cell) => (
-                  <TableCell key={cell.id} className="truncate">
+                  <TableCell key={cell.id} className={cn("truncate", cell.column.columnDef.meta?.className)}>
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </TableCell>
                 ))}
@@ -64,6 +70,5 @@ export default function AppTable({ table, isLoading, isError, error }) {
           )}
         </TableBody>
       </Table>
-    </div>
   )
 }

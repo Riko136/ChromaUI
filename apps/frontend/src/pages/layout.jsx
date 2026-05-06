@@ -5,13 +5,15 @@ import {
   useReactTable,
 } from "@tanstack/react-table"
 
+import { Trash2 } from "lucide-react"
 import { SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/sidebar"
 import { Checkbox } from "@/components/ui/checkbox"
+import { Button } from "@/components/ui/button"
 import AppSidebar from "./app-sidebar"
 import AppTable from "./app-table"
 import TablePagination from "./app-pagination"
-import CollectionDialog from "@/components/collection-dialog"
-import { useItems } from "@/lib/queries"
+import CollectionDialog from "@/pages/collection-dialog"
+import { useDeleteItems, useItems } from "@/lib/queries"
 
 const columns = [
   {
@@ -33,16 +35,16 @@ const columns = [
         aria-label="Select row"
       />
     ),
-    size: 10,
+    size: 25,
     enableSorting: false,
     enableHiding: false,
   },
-  { accessorKey: "id", header: "ID", size: 140 },
-  { accessorKey: "document", header: "Document", size: 420 },
+  { accessorKey: "id", header: "ID", size: 550, },
+  { accessorKey: "document", header: "Document", size: 900,},
   {
     accessorKey: "metadata",
     header: "Metadata",
-    size: 320,
+    size: 1600,
     cell: ({ getValue }) => {
       const v = getValue()
       return v ? <code className="text-xs">{JSON.stringify(v)}</code> : "—"
@@ -57,6 +59,7 @@ export default function Layout() {
   const [rowSelection, setRowSelection] = useState({})
 
   const { data, isLoading, isError, error } = useItems(selected?.name)
+  const deleteItems = useDeleteItems(selected?.name)
 
   const rows = useMemo(() => {
     if (!data?.ids) return []
@@ -70,16 +73,27 @@ export default function Layout() {
   const table = useReactTable({
     data: rows,
     columns,
+    getRowId: (row) => row.id,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     onRowSelectionChange: setRowSelection,
     state: { rowSelection },
     defaultColumn: {
       minSize: 10,
-      size: 240,
-      maxSize: 500,
+      size: 500,
+      maxSize: 2000,
     },
   })
+
+
+  const selectedIds = Object.keys(rowSelection)
+  const handleDelete = () => {
+    if (selectedIds.length === 0) return
+    if (!window.confirm(`Delete ${selectedIds.length} item(s)? This cannot be undone.`)) return
+    deleteItems.mutate(selectedIds, {
+      onSuccess: () => setRowSelection({}),
+    })
+  }
 
   return (
     <SidebarProvider>
@@ -89,14 +103,14 @@ export default function Layout() {
         selected={selected}
         setSelected={setSelected}
       />
-      <SidebarInset className="flex flex-col min-h-svh">
+      <SidebarInset className="flex flex-col min-h-svh min-w-0">
         <header className="flex h-12 items-center gap-2 border-b px-4">
           <SidebarTrigger />
           <span className="text-sm font-medium">
             {selected?.name ?? "Select a collection"}
           </span>
         </header>
-        <main className="flex-1">
+        <main className="flex-1 overflow-x-auto [&_[data-slot=table-container]]:overflow-x-visible">
           {selected ? (
             <AppTable
               table={table}
@@ -110,8 +124,23 @@ export default function Layout() {
             </p>
           )}
         </main>
-        <footer className="flex h-12 items-center justify-end gap-2 border-t px-4">
-          {selected && <TablePagination table={table} />}
+        <footer className="flex h-12 items-center justify-between gap-2 border-t px-4">
+          <div className="flex items-center gap-2">
+            {selected && selectedIds.length > 0 && (
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={handleDelete}
+                disabled={deleteItems.isPending}
+              >
+                <Trash2 className="size-4" />
+                Delete {selectedIds.length} item{selectedIds.length !== 1 && "s"}
+              </Button>
+            )}
+          </div>
+          <div className="flex items-center gap-2">
+            {selected && <TablePagination table={table} />}
+          </div>
         </footer>
       </SidebarInset>
       <CollectionDialog

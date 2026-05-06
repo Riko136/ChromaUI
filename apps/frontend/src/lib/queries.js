@@ -148,3 +148,16 @@ export function useDeleteItem(name) {
       qc.invalidateQueries({ queryKey: keys.items(name) }),
   })
 }
+
+export function useDeleteItems(name) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (ids) =>
+      request(
+        `/api/collections/${encodeURIComponent(name)}/items`,
+        jsonInit("DELETE", { ids }),
+      ),
+    onSuccess: () =>
+      qc.invalidateQueries({ queryKey: keys.items(name) }),
+  })
+}
