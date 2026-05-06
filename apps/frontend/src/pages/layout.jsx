@@ -5,12 +5,13 @@ import {
   useReactTable,
 } from "@tanstack/react-table"
 
-import { Trash2 } from "lucide-react"
+import { Trash2, FilePlusCorner  } from "lucide-react"
 import { SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/sidebar"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Button } from "@/components/ui/button"
 import AppSidebar from "./app-sidebar"
 import AppTable from "./app-table"
+import ItemDialog from "./item-dialog"
 import TablePagination from "./app-pagination"
 import CollectionDialog from "@/pages/collection-dialog"
 import { useDeleteItems, useItems } from "@/lib/queries"
@@ -35,16 +36,18 @@ const columns = [
         aria-label="Select row"
       />
     ),
-    size: 25,
+    size: "32px",
+    // minSize: 20,
+    // maxSize: 24,
     enableSorting: false,
     enableHiding: false,
   },
-  { accessorKey: "id", header: "ID", size: 550, },
-  { accessorKey: "document", header: "Document", size: 900,},
+  { accessorKey: "id", header: "ID", size: "auto" },
+  { accessorKey: "document", header: "Document", size: "900px"},
   {
     accessorKey: "metadata",
     header: "Metadata",
-    size: 1600,
+    size: "auto",
     cell: ({ getValue }) => {
       const v = getValue()
       return v ? <code className="text-xs">{JSON.stringify(v)}</code> : "—"
@@ -55,6 +58,7 @@ const columns = [
 export default function Layout() {
   const [selected, setSelected] = useState(null)
   const [createOpen, setCreateOpen] = useState(false)
+  const [createItemOpen, setCreateItemOpen] = useState(false)
   const [mode, setMode] = useState("")
   const [rowSelection, setRowSelection] = useState({})
 
@@ -78,11 +82,11 @@ export default function Layout() {
     getPaginationRowModel: getPaginationRowModel(),
     onRowSelectionChange: setRowSelection,
     state: { rowSelection },
-    defaultColumn: {
-      minSize: 10,
-      size: 500,
-      maxSize: 2000,
-    },
+    // defaultColumn: {
+    //   minSize: 10,
+    //   size: 500,
+    //   maxSize: 2000,
+    // },
   })
 
 
@@ -110,7 +114,7 @@ export default function Layout() {
             {selected?.name ?? "Select a collection"}
           </span>
         </header>
-        <main className="flex-1 overflow-x-auto [&_[data-slot=table-container]]:overflow-x-visible">
+        <main className="flex-1 min-w-0 overflow-x-auto [&_[data-slot=table-container]]:overflow-x-visible">
           {selected ? (
             <AppTable
               table={table}
@@ -130,6 +134,7 @@ export default function Layout() {
               <Button
                 variant="destructive"
                 size="sm"
+                className="bg-transparent"
                 onClick={handleDelete}
                 disabled={deleteItems.isPending}
               >
@@ -137,6 +142,16 @@ export default function Layout() {
                 Delete {selectedIds.length} item{selectedIds.length !== 1 && "s"}
               </Button>
             )}
+            {selected && 
+              <Button variant="ghost" 
+                onClick={() => setCreateItemOpen(true)}
+                size="sm"
+                disabled={createItemOpen}  
+              >
+                <FilePlusCorner  className="size-4"/> 
+                <span className="sr-only">Add collection</span>
+              </Button>
+            }
           </div>
           <div className="flex items-center gap-2">
             {selected && <TablePagination table={table} />}
@@ -148,6 +163,11 @@ export default function Layout() {
         onOpenChange={setCreateOpen}
         mode={mode}
         initial={selected}
+      />
+      <ItemDialog
+        open={createItemOpen}
+        onOpenChange={setCreateItemOpen}
+        collection={selected}
       />
     </SidebarProvider>
   )

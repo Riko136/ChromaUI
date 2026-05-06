@@ -16,10 +16,16 @@ router.get('/:name/items', async (req, res) => {
 });
 
 router.post('/:name/items', async (req, res) => {
-  const { ids, documents, metadatas, embeddings } = req.body;
-  const collection = await getClient().getCollection({ name: req.params.name });
-  await collection.add({ ids, documents, metadatas, embeddings });
-  res.status(201).json({ added: ids.length });
+  try{
+    const { ids, documents, metadatas} = req.body;
+    const collection = await getClient().getCollection({ name: req.params.name });
+    await collection.add({ ids, documents, metadatas });
+    res.status(201).json({ added: ids.length });
+  } catch(error: any){
+    res.status(500).json({error: error.message})
+  }
+
+
 });
 
 router.patch('/:name/items/:id', async (req, res) => {

@@ -8,8 +8,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-
-import {cn} from "@/lib/utils"
+import { cn } from "@/lib/utils"
 
 export default function AppTable({ table, isLoading, isError, error }) {
   if (isLoading) {
@@ -23,27 +22,29 @@ export default function AppTable({ table, isLoading, isError, error }) {
 
   return (
 
-      <Table
-        className="table-fixed"
-        style={{ width: table.getTotalSize() }}
-      >
+      <Table className="w-full">
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow key={headerGroup.id}>
-              {headerGroup.headers.map((header) => (
-                <TableHead
-                  key={header.id}
-                  style={{ width: header.column.getSize() }}
-                  className={header.column.columnDef.meta?.className}
-                >
-                  {header.isPlaceholder
-                    ? null
-                    : flexRender(
-                        header.column.columnDef.header,
-                        header.getContext(),
-                      )}
-                </TableHead>
-              ))}
+              {headerGroup.headers.map((header) => {
+                const { size } = header.column.columnDef
+                const id = header.column.id
+                const rendered = header.isPlaceholder
+                  ? null
+                  : flexRender(header.column.columnDef.header, header.getContext())
+                const content = id === "select"
+                  ? <div className="flex items-center justify-center">{rendered}</div>
+                  : rendered
+                return (
+                  <TableHead
+                    key={header.id}
+                    style={{ width: size }}
+                    className={cn("whitespace-normal", header.column.columnDef.meta?.className)}
+                  >
+                    {content}
+                  </TableHead>
+                )
+              })}
             </TableRow>
           ))}
         </TableHeader>
@@ -54,11 +55,34 @@ export default function AppTable({ table, isLoading, isError, error }) {
                 key={row.id}
                 data-state={row.getIsSelected() && "selected"}
               >
-                {row.getVisibleCells().map((cell) => (
-                  <TableCell key={cell.id} className={cn("truncate", cell.column.columnDef.meta?.className)}>
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </TableCell>
-                ))}
+                {row.getVisibleCells().map((cell) => {
+                  const { size } = cell.column.columnDef
+                  const id = cell.column.id
+                  const rendered = flexRender(cell.column.columnDef.cell, cell.getContext())
+                  let content
+                  if (id === "select") {
+                    content = <div className="flex items-center justify-center py-2">{rendered}</div>
+                  } else if (id === "document" || id === "metadata") {
+                    content = (
+                      <div className="max-w-4xl py-1.5">
+                        <div className="truncate">{rendered}</div>
+                      </div>
+                    )
+                  } else if (id === "id") {
+                    content = <div className="pt-1.5 line-clamp-1 min-w-14">{rendered}</div>
+                  } else {
+                    content = <div className="pt-1.5 line-clamp-1">{rendered}</div>
+                  }
+                  return (
+                    <TableCell
+                      key={cell.id}
+                      style={{ width: size }}
+                      className="align-top py-0 whitespace-normal"
+                    >
+                      {content}
+                    </TableCell>
+                  )
+                })}
               </TableRow>
             ))
           ) : (

@@ -110,15 +110,15 @@ export function useDeleteCollection() {
   })
 }
 
-export function useAddItems(name) {
+export function useAddItems() {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: ({ ids, documents, metadatas, embeddings }) =>
+    mutationFn: ({ name, ids, documents, metadatas}) =>
       request(
         `/api/collections/${encodeURIComponent(name)}/items`,
-        jsonInit("POST", { ids, documents, metadatas, embeddings }),
+        jsonInit("POST", { ids, documents, metadatas }),
       ),
-    onSuccess: () =>
+    onSuccess: (_data, { name }) =>
       qc.invalidateQueries({ queryKey: keys.items(name) }),
   })
 }
