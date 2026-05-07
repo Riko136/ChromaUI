@@ -1,21 +1,15 @@
 import { useEffect, useState } from "react"
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet"
 import { Field, FieldGroup, FieldLabel, FieldError } from "@/components/ui/field"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { Pencil, Copy, Check, Loader2 } from "lucide-react"
+import { Label } from "@/components/ui/label"
+import { Pencil, Copy, Check, Loader2, X } from "lucide-react"
 import { useUpdateItem } from "@/lib/queries"
 import { cn } from "@/lib/utils"
-import { Label } from "@/components/ui/label"
 
-export default function ItemDetailSheet({ item, open, onOpenChange, collectionName }) {
+
+export default function ItemDetailPanel({ item, onClose, collectionName }) {
   const updateItem = useUpdateItem()
 
   const saveDocument = (document) =>
@@ -25,60 +19,66 @@ export default function ItemDetailSheet({ item, open, onOpenChange, collectionNa
     updateItem.mutateAsync({ name: collectionName, id: item.id, metadata })
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="sm:max-w-lg">
-        <SheetHeader>
-          <SheetTitle>Record details</SheetTitle>
-          <SheetDescription className="sr-only">
-            View and edit fields for the selected record.
-          </SheetDescription>
-        </SheetHeader>
-        <div className="flex-1 overflow-y-auto px-4 pb-4">
-          <FieldGroup>
-            <EditableField
-              label="ID"
-              value={item?.id ?? ""}
-              readOnly
-            />
-            <EditableField
-              label="Document"
-              value={item?.document ?? ""}
-              multiline
-              onSave={saveDocument}
-              isPending={updateItem.isPending}
-            />
-            <EditableField
-              label="Metadata"
-              value={item?.metadata ?? null}
-              multiline
-              onSave={saveMetadata}
-              isPending={updateItem.isPending}
-              serialize={(v) => (v == null ? "" : JSON.stringify(v, null, 2))}
-              parse={(s) => {
-                const t = s.trim()
-                if (!t) return undefined
-                try {
-                  return JSON.parse(t)
-                } catch {
-                  throw new Error("Must be valid JSON")
-                }
-              }}
-            />
-            <EditableField
-              label="Embedding"
-              value={item?.embedding ?? null}
-              readOnly
-              serialize={(v) => (Array.isArray(v) && v.length ? JSON.stringify(v) : "")}
-            />
-          </FieldGroup>
-          {updateItem.isError && (
-            <p className="mt-3 text-sm text-destructive">
-              {updateItem.error.message}
-            </p>
-          )}
-        </div>
-      </SheetContent>
-    </Sheet>
+
+    <aside className="flex h-full w-96 flex-col border-l bg-background">
+      <header className="flex h-12 items-center justify-between border-b px-4">
+        <h2 className="text-sm font-medium">Record details</h2>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon-sm"
+          onClick={onClose}
+          aria-label="Close"
+        >
+          <X className="size-4" />
+        </Button>
+      </header>
+      <div className="flex-1 overflow-y-auto px-4 py-4">
+        <FieldGroup>
+          <EditableField
+            label="ID"
+            value={item?.id ?? ""}
+            readOnly
+          />
+          <EditableField
+            label="Document"
+            value={item?.document ?? ""}
+            multiline
+            onSave={saveDocument}
+            isPending={updateItem.isPending}
+          />
+          <EditableField
+            label="Metadata"
+            value={item?.metadata ?? null}
+            multiline
+            onSave={saveMetadata}
+            isPending={updateItem.isPending}
+            serialize={(v) => (v == null ? "" : JSON.stringify(v, null, 2))}
+            parse={(s) => {
+              const t = s.trim()
+              if (!t) return undefined
+              try {
+                return JSON.parse(t)
+              } catch {
+                throw new Error("Must be valid JSON")
+              }
+            }}
+          />
+          <EditableField
+            label="Embedding"
+            value={item?.embedding ?? null}
+            readOnly
+            serialize={(v) => (Array.isArray(v) && v.length ? JSON.stringify(v) : "")}
+          />
+        </FieldGroup>
+        {updateItem.isError && (
+          <p className="mt-3 text-sm text-destructive">
+            {updateItem.error.message}
+          </p>
+        )}
+      </div>
+    </aside>
+
   )
 }
 
@@ -121,10 +121,9 @@ function EditableField({
     try {
       parsed = parse(draft)
       await onSave(parsed)
-      setEditing(false)    
+      setEditing(false)
     } catch (e) {
       setError(e.message)
-      return
     }
   }
 
@@ -133,7 +132,7 @@ function EditableField({
       await navigator.clipboard.writeText(display)
       setCopied(true)
       setTimeout(() => setCopied(false), 800)
-    } catch (e){
+    } catch (e) {
       setError(e.message)
     }
   }

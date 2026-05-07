@@ -15,7 +15,7 @@ import ItemDialog from "./item-dialog"
 import TablePagination from "./app-pagination"
 import CollectionDialog from "@/pages/collection-dialog"
 import { useDeleteItems, useItems } from "@/lib/queries"
-import ItemDetailSheet from "./item-detail-sheet"
+import ItemDetailPanel from "./item-detail-panel"
 
 const columns = [
   {
@@ -119,27 +119,30 @@ export default function Layout() {
             {selected?.name ?? "Select a collection"}
           </span>
         </header>
-        <main className="flex-1 min-w-0 overflow-x-auto [&_[data-slot=table-container]]:overflow-x-visible">
-          {selected ? (
-            <AppTable
-              table={table}
-              isLoading={isLoading}
-              isError={isError}
-              error={error}
-              onRowClick={(row) => setOpenItemId(row.id)}
+        <div className="flex flex-1 min-h-0">
+          <main className="flex-1 min-w-0 overflow-x-auto [&_[data-slot=table-container]]:overflow-x-visible">
+            {selected ? (
+              <AppTable
+                table={table}
+                isLoading={isLoading}
+                isError={isError}
+                error={error}
+                onRowClick={(row) => setOpenItemId(row.id)}
+              />
+            ) : (
+              <p className="text-sm text-muted-foreground p-4">
+                Pick a collection from the sidebar to view its contents.
+              </p>
+            )}
+          </main>
+          {openItem && (
+            <ItemDetailPanel
+              item={openItem}
+              collectionName={selected?.name}
+              onClose={() => setOpenItemId(null)}
             />
-          ) : (
-            <p className="text-sm text-muted-foreground p-4">
-              Pick a collection from the sidebar to view its contents.
-            </p>
           )}
-          <ItemDetailSheet
-            item={openItem}
-            onOpenChange={(v) => !v && setOpenItemId(null)}
-            open={!!openItem}
-            collectionName={selected?.name}
-          />
-        </main>
+        </div>
         <footer className="flex h-12 items-center justify-between gap-2 border-t px-4">
           <div className="flex items-center gap-2">
             {selected && selectedIds.length > 0 && (
