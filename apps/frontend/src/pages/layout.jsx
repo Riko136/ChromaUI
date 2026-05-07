@@ -15,6 +15,7 @@ import ItemDialog from "./item-dialog"
 import TablePagination from "./app-pagination"
 import CollectionDialog from "@/pages/collection-dialog"
 import { useDeleteItems, useItems } from "@/lib/queries"
+import ItemDetailSheet from "./item-detail-sheet"
 
 const columns = [
   {
@@ -61,6 +62,7 @@ export default function Layout() {
   const [createItemOpen, setCreateItemOpen] = useState(false)
   const [mode, setMode] = useState("")
   const [rowSelection, setRowSelection] = useState({})
+  const [openItemId, setOpenItemId] = useState(null)
 
   const { data, isLoading, isError, error } = useItems(selected?.name)
   const deleteItems = useDeleteItems(selected?.name)
@@ -71,8 +73,11 @@ export default function Layout() {
       id,
       document: data.documents?.[i] ?? "",
       metadata: data.metadatas?.[i] ?? null,
+      embedding: data.embeddings?.[i] ?? [],
     }))
   }, [data])
+
+  const openItem = openItemId ? rows.find((r) => r.id === openItemId) ?? null : null
 
   const table = useReactTable({
     data: rows,
@@ -121,12 +126,19 @@ export default function Layout() {
               isLoading={isLoading}
               isError={isError}
               error={error}
+              onRowClick={(row) => setOpenItemId(row.id)}
             />
           ) : (
             <p className="text-sm text-muted-foreground p-4">
               Pick a collection from the sidebar to view its contents.
             </p>
           )}
+          <ItemDetailSheet
+            item={openItem}
+            onOpenChange={(v) => !v && setOpenItemId(null)}
+            open={!!openItem}
+            collectionName={selected?.name}
+          />
         </main>
         <footer className="flex h-12 items-center justify-between gap-2 border-t px-4">
           <div className="flex items-center gap-2">
@@ -169,6 +181,7 @@ export default function Layout() {
         onOpenChange={setCreateItemOpen}
         collection={selected}
       />
+
     </SidebarProvider>
   )
 }

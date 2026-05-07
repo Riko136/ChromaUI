@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/table"
 import { cn } from "@/lib/utils"
 
-export default function AppTable({ table, isLoading, isError, error }) {
+export default function AppTable({ table, isLoading, isError, error, onRowClick }) {
   if (isLoading) {
     return <p className="p-4 text-sm text-muted-foreground">Loading…</p>
   }
@@ -54,6 +54,8 @@ export default function AppTable({ table, isLoading, isError, error }) {
               <TableRow
                 key={row.id}
                 data-state={row.getIsSelected() && "selected"}
+                onClick={() => onRowClick?.(row.original)}
+                className={"cursor-pointer"}
               >
                 {row.getVisibleCells().map((cell) => {
                   const { size } = cell.column.columnDef
@@ -78,6 +80,7 @@ export default function AppTable({ table, isLoading, isError, error }) {
                       key={cell.id}
                       style={{ width: size }}
                       className="align-top py-0 whitespace-normal"
+                      onClick={id === "select" ? (e) => e.stopPropagation() : undefined}
                     >
                       {content}
                     </TableCell>

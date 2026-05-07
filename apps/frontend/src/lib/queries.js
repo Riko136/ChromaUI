@@ -123,15 +123,15 @@ export function useAddItems() {
   })
 }
 
-export function useUpdateItem(name) {
+export function useUpdateItem() {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: ({ id, document, metadata }) =>
+    mutationFn: ({ name, id, document, metadata }) =>
       request(
         `/api/collections/${encodeURIComponent(name)}/items/${encodeURIComponent(id)}`,
         jsonInit("PATCH", { document, metadata }),
       ),
-    onSuccess: () =>
+    onSuccess: (_data, {name}) =>
       qc.invalidateQueries({ queryKey: keys.items(name) }),
   })
 }

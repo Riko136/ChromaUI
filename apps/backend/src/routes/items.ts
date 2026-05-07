@@ -29,14 +29,18 @@ router.post('/:name/items', async (req, res) => {
 });
 
 router.patch('/:name/items/:id', async (req, res) => {
-  const { document, metadata } = req.body;
-  const collection = await getClient().getCollection({ name: req.params.name });
-  await collection.update({
-    ids: [req.params.id],
-    ...(document !== undefined && { documents: [document] }),
-    ...(metadata !== undefined && { metadatas: [metadata] }),
-  });
-  res.json({ updated: req.params.id });
+  try{
+    const { document, metadata } = req.body;
+    const collection = await getClient().getCollection({ name: req.params.name });
+    await collection.update({
+      ids: [req.params.id],
+      ...(document !== undefined && { documents: [document] }),
+      ...(metadata !== undefined && { metadatas: [metadata] }),
+    });
+    res.json({ updated: req.params.id });
+  } catch(error: any){
+    res.status(500).json({error: error.message})
+  }
 });
 
 router.delete('/:name/items', async (req, res) => {
