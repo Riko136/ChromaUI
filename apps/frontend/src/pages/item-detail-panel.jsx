@@ -20,7 +20,7 @@ export default function ItemDetailPanel({ item, onClose, collectionName }) {
 
   return (
 
-    <aside className="flex h-full w-96 flex-col border-l bg-background">
+    <aside className="flex h-full w-full flex-col border-l bg-background">
       <header className="flex h-12 items-center justify-between border-b px-4">
         <h2 className="text-sm font-medium">Record details</h2>
         <Button
@@ -101,7 +101,13 @@ function EditableField({
 
   useEffect(() => {
     if (!editing) setDraft(display)
-  }, [editing])
+  }, [editing, display])
+
+  useEffect(() => {
+    if (!copied) return
+    const id = setTimeout(() => setCopied(false), 800)
+    return () => clearTimeout(id)
+  }, [copied])
 
   const startEdit = () => {
     setDraft(display)
@@ -131,7 +137,6 @@ function EditableField({
     try {
       await navigator.clipboard.writeText(display)
       setCopied(true)
-      setTimeout(() => setCopied(false), 800)
     } catch (e) {
       setError(e.message)
     }
@@ -188,7 +193,7 @@ function EditableField({
               onKeyDown={onKeyDown}
               autoFocus
               rows={8}
-              className="font-mono text-xs"
+              className="font-mono text-xs field-sizing-fixed overflow-y-auto"
             />
           ) : (
             <Input
@@ -223,7 +228,7 @@ function EditableField({
       ) : multiline ? (
         <pre
           className={cn(
-            "whitespace-pre-wrap break-words text-sm font-mono rounded-md border bg-muted/30 px-3 py-2 max-h-48 overflow-auto",
+            "whitespace-pre-wrap break-words text-sm font-mono rounded-md border bg-muted/30 px-3 py-2 overflow-auto resize-y h-[20lh]",
             !display && "text-muted-foreground"
           )}
         >

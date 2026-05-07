@@ -16,6 +16,11 @@ import TablePagination from "./app-pagination"
 import CollectionDialog from "@/pages/collection-dialog"
 import { useDeleteItems, useItems } from "@/lib/queries"
 import ItemDetailPanel from "./item-detail-panel"
+import {
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
+} from "@/components/ui/resizable"
 
 const columns = [
   {
@@ -119,30 +124,37 @@ export default function Layout() {
             {selected?.name ?? "Select a collection"}
           </span>
         </header>
-        <div className="flex flex-1 min-h-0">
-          <main className="flex-1 min-w-0 overflow-x-auto [&_[data-slot=table-container]]:overflow-x-visible">
-            {selected ? (
-              <AppTable
-                table={table}
-                isLoading={isLoading}
-                isError={isError}
-                error={error}
-                onRowClick={(row) => setOpenItemId(row.id)}
-              />
-            ) : (
-              <p className="text-sm text-muted-foreground p-4">
-                Pick a collection from the sidebar to view its contents.
-              </p>
-            )}
-          </main>
+        <ResizablePanelGroup direction="horizontal" className="flex-1 min-h-0" autoSaveId="record-detail-layout">
+          <ResizablePanel minSize={"50%"}>
+            <main className="h-full min-w-0 overflow-x-auto [&_[data-slot=table-container]]:overflow-x-visible">
+              {selected ? (
+                <AppTable
+                  table={table}
+                  isLoading={isLoading}
+                  isError={isError}
+                  error={error}
+                  onRowClick={(row) => setOpenItemId(row.id)}
+                />
+              ) : (
+                <p className="text-sm text-muted-foreground p-4">
+                  Pick a collection from the sidebar to view its contents.
+                </p>
+              )}
+            </main>
+          </ResizablePanel>
           {openItem && (
-            <ItemDetailPanel
-              item={openItem}
-              collectionName={selected?.name}
-              onClose={() => setOpenItemId(null)}
-            />
+            <>
+              <ResizableHandle withHandle />
+              <ResizablePanel minSize={"20%"}>
+                <ItemDetailPanel
+                  item={openItem}
+                  collectionName={selected?.name}
+                  onClose={() => setOpenItemId(null)}
+                />
+              </ResizablePanel>
+            </>
           )}
-        </div>
+        </ResizablePanelGroup>
         <footer className="flex h-12 items-center justify-between gap-2 border-t px-4">
           <div className="flex items-center gap-2">
             {selected && selectedIds.length > 0 && (
