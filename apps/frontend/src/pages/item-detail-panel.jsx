@@ -20,8 +20,8 @@ export default function ItemDetailPanel({ item, onClose, collectionName }) {
 
   return (
 
-    <aside className="flex h-full w-full flex-col border-l bg-background">
-      <header className="flex h-12 items-center justify-between border-b px-4">
+    <aside className="flex h-full w-full flex-col bg-background">
+      <header className="flex h-10 items-center justify-between border-b px-4">
         <h2 className="text-sm font-medium">Record details</h2>
         <Button
           type="button"
@@ -99,9 +99,6 @@ function EditableField({
 
   const display = serialize(value)
 
-  useEffect(() => {
-    if (!editing) setDraft(display)
-  }, [editing, display])
 
   useEffect(() => {
     if (!copied) return

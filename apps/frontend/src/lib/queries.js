@@ -9,8 +9,6 @@ export const keys = {
   collections: ["collections"],
   items: (name, params) =>
     params ? ["items", name, params] : ["items", name],
-  textQuery: (name, text, opts) => ["textQuery", name, text, opts],
-  metadataQuery: (name, where, opts) => ["metadataQuery", name, where, opts],
 }
 
 async function request(path, init) {
@@ -51,28 +49,22 @@ export function useItems(name) {
   })
 }
 
-export function useTextQuery(name, queryText, { nResults = 10, where } = {}) {
-  return useQuery({
-    queryKey: keys.textQuery(name, queryText, { nResults, where }),
-    queryFn: () =>
-      request(
-        `/api/collections/${encodeURIComponent(name)}/query`,
-        jsonInit("POST", { queryText, nResults, where }),
-      ),
-    enabled: !!name && !!queryText,
-  })
-}
 
-export function useMetadataQuery(name, where, { limit = 50, offset = 0 } = {}) {
+
+export function useSearch(name, text, mode, where, ids) {
+  const m = mode[0]
+  const path = m === "semantic" ? "semantic" : m === "regex" ? "regex" : "text"
+  const body = m === "semantic" ? { where, queryText: text, ids }
+             : m === "regex"    ? { where, regex: text, ids }
+             :                    { where, text, ids }
+             
   return useQuery({
-    queryKey: keys.metadataQuery(name, where, { limit, offset }),
-    queryFn: () =>
-      request(
-        `/api/collections/${encodeURIComponent(name)}/where`,
-        jsonInit("POST", { where, limit, offset }),
-      ),
-    enabled: !!name && !!where,
+    queryKey: ["search", name, m, text, where, ids],
+    queryFn: () => request(`/api/collections/${encodeURIComponent(name)}/${path}`, jsonInit("POST", body)),
+    enabled: !!name && !!text && !!m,
+    placeholderData: keepPreviousData
   })
+
 }
 
 export function useCreateCollection() {

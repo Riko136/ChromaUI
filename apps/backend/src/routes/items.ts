@@ -12,7 +12,7 @@ router.get('/:name/items', async (req, res) => {
     // offset,
     include: ['documents', 'metadatas', 'embeddings'],
   });
-  res.json(result);
+  res.json(result.rows());
 });
 
 router.post('/:name/items', async (req, res) => {

@@ -15,3 +15,16 @@ Alternatively, queries based on metadata should also be possible.
 Chroma-DB should be used as the vector database.
 
 Node.js and React should be used as the programming environment.
+
+Feature ideas for the future:
+
+- User and Database Management
+- Collection Forking
+- File uploads
+- Persistant collection selection and item detail panel sizing
+- More colors?
+- 2D projection (UMAP/PCA) scatter plot of embeddings?
+- Loading skeletons, empty collection states (shadcn `Empty`), error toasts (shadcn `Sonner`)
+- Collection configuration
+- Connection to secured Chroma instances 
+

@@ -14,8 +14,11 @@ import AppTable from "./app-table"
 import ItemDialog from "./item-dialog"
 import TablePagination from "./app-pagination"
 import CollectionDialog from "@/pages/collection-dialog"
-import { useDeleteItems, useItems } from "@/lib/queries"
+import { useDeleteItems, useItems, useSearch } from "@/lib/queries"
 import ItemDetailPanel from "./item-detail-panel"
+import SearchBar from "./search-bar"
+import { useDebouncedValue } from "@/lib/use-debounced-value"
+
 import {
   ResizableHandle,
   ResizablePanel,
@@ -68,19 +71,27 @@ export default function Layout() {
   const [mode, setMode] = useState("")
   const [rowSelection, setRowSelection] = useState({})
   const [openItemId, setOpenItemId] = useState(null)
+  const [searchInput, setSearchInput] = useState("");
+  const [searchMode, setSearchMode] = useState(["text"]);
+  const debouncedInput = useDebouncedValue(searchInput, 600)
 
-  const { data, isLoading, isError, error } = useItems(selected?.name)
+  const itemsQuery  = useItems(selected?.name)
+  const searchQuery = useSearch(selected?.name, debouncedInput, searchMode)
+  const active = debouncedInput ? searchQuery : itemsQuery
+  const { data: rows = [], isLoading, isError, error } = active
   const deleteItems = useDeleteItems(selected?.name)
 
-  const rows = useMemo(() => {
-    if (!data?.ids) return []
-    return data.ids.map((id, i) => ({
-      id,
-      document: data.documents?.[i] ?? "",
-      metadata: data.metadatas?.[i] ?? null,
-      embedding: data.embeddings?.[i] ?? [],
-    }))
-  }, [data])
+
+
+  // const rows = useMemo(() => {
+  //   if (!data?.ids) return []
+  //   return data.ids.map((id, i) => ({
+  //     id,
+  //     document: data.documents?.[i] ?? "",
+  //     metadata: data.metadatas?.[i] ?? null,
+  //     embedding: data.embeddings?.[i] ?? [],
+  //   }))
+  // }, [data])
 
   const openItem = openItemId ? rows.find((r) => r.id === openItemId) ?? null : null
 
@@ -118,12 +129,21 @@ export default function Layout() {
         setSelected={setSelected}
       />
       <SidebarInset className="flex flex-col min-h-svh min-w-0">
-        <header className="flex h-12 items-center gap-2 border-b px-4">
+        <header className="flex h-14 items-center gap-2 px-4">
           <SidebarTrigger />
           <span className="text-sm font-medium">
             {selected?.name ?? "Select a collection"}
           </span>
         </header>
+        <div className="flex min-h-10 items-center gap-2 border-b px-4">
+          <SearchBar 
+            name={selected?.name}
+            mode={searchMode}
+            setMode={setSearchMode}
+            input={searchInput}
+            setInput={setSearchInput}
+          />
+        </div>
         <ResizablePanelGroup direction="horizontal" className="flex-1 min-h-0" autoSaveId="record-detail-layout">
           <ResizablePanel minSize={"50%"}>
             <main className="h-full min-w-0 overflow-x-auto [&_[data-slot=table-container]]:overflow-x-visible">
