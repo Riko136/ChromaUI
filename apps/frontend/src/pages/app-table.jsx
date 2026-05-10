@@ -1,4 +1,5 @@
 import { flexRender } from "@tanstack/react-table"
+import { useState } from "react"
 
 import {
   Table,
@@ -10,7 +11,7 @@ import {
 } from "@/components/ui/table"
 import { cn } from "@/lib/utils"
 
-export default function AppTable({ table, isLoading, isError, error, onRowClick }) {
+export default function AppTable({ table, isLoading, isError, error, onRowClick, openItemId }) {
   if (isLoading) {
     return <p className="p-4 text-sm text-muted-foreground">Loading…</p>
   }
@@ -23,7 +24,7 @@ export default function AppTable({ table, isLoading, isError, error, onRowClick 
   return (
 
       <Table className="w-full">
-        <TableHeader>
+        <TableHeader className="bg-muted/90">
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow key={headerGroup.id}>
               {headerGroup.headers.map((header) => {
@@ -53,8 +54,11 @@ export default function AppTable({ table, isLoading, isError, error, onRowClick 
             table.getRowModel().rows.map((row) => (
               <TableRow
                 key={row.id}
-                data-state={row.getIsSelected() && "selected"}
-                onClick={() => onRowClick?.(row.original)}
+                data-state={(row.getIsSelected() || row.id === openItemId) && "selected"}
+                onClick={() => {
+                  onRowClick?.(row.original)
+                  
+                }}
                 className={"cursor-pointer"}
               >
                 {row.getVisibleCells().map((cell) => {

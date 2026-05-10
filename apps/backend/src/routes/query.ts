@@ -11,7 +11,7 @@ router.post('/:name/text', async (req, res) => {
     whereDocument: { $contains: text },
     ...(where !== null && { where }), 
     ...(ids !== null && { ids }),
-    include: ['documents', 'metadatas'],
+    // include: ['documents', 'metadatas'],
   });
   res.json(results.rows());
   }catch(e:any){
@@ -30,7 +30,7 @@ router.post('/:name/semantic', async (req, res) => {
       nResults: 100,
       include: ['documents', 'metadatas', 'embeddings', 'distances'],
     });
-    res.json(results.rows());
+    res.json(results.rows()[0]);
   }catch(e:any){
     res.status(500).json({error: e.message})
   }
@@ -46,7 +46,7 @@ router.post('/:name/regex', async (req, res) => {
       ...(where !== null && { where }),
       ids,
       whereDocument: {"$regex": regex},
-      include: ['documents', 'metadatas', 'embeddings'],
+      // include: ['documents', 'metadatas', 'embeddings'],
     });
     res.json(results.rows());
   }catch(e:any){

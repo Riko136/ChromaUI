@@ -11,28 +11,29 @@ import { Field } from "@/components/ui/field"
 import { X  } from "lucide-react"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 
-export default function SearchBar({input, setInput, mode, setMode}){
+export default function SearchBar({input, setInput, mode, setMode, disabled}){
 
 
 
     return (
      
-        <Field className={"max-w-sm"}>
-            <InputGroup>
-            <InputGroupInput value={input} onChange={(e) => setInput(e.target.value)} placeholder="Search documents..." />
+        <Field className={"max-w-sm"} >
+            <InputGroup >
+            <InputGroupInput disabled={disabled} value={input} onChange={(e) => setInput(e.target.value)} placeholder="Search documents..." />
             <InputGroupAddon align="inline-start">
                 <SearchIcon className="text-muted-foreground" />
             </InputGroupAddon>
             
             <InputGroupAddon align="inline-end right-0" >
                 {input && <InputGroupButton variant="ghost" onClick={() => setInput("")}><X /></InputGroupButton>}
-                <ToggleGroup variant="outline" defaultValue={["text"]} value={mode} onValueChange={(value) => setMode(value)}>
+                <ToggleGroup disabled={disabled} variant="outline" type="single" defaultValue={["text"]} value={mode} onValueChange={(value) => value[0] && setMode(value)}>
                     <ToggleGroupItem value={"text"} >Text</ToggleGroupItem>
                     <ToggleGroupItem value={"semantic"}>Semantic</ToggleGroupItem>
                     <ToggleGroupItem value={"regex"}>Regex</ToggleGroupItem>
                 </ToggleGroup>
             </InputGroupAddon>
-            </InputGroup> 
+            </InputGroup>
+
         </Field>
 
         

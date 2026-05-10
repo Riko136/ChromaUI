@@ -17,52 +17,13 @@ import CollectionDialog from "@/pages/collection-dialog"
 import { useDeleteItems, useItems, useSearch } from "@/lib/queries"
 import ItemDetailPanel from "./item-detail-panel"
 import SearchBar from "./search-bar"
-import { useDebouncedValue } from "@/lib/use-debounced-value"
+import { useDebouncedValue } from "@/hooks/use-debounced-value"
 
 import {
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable"
-
-const columns = [
-  {
-    id: "select",
-    header: ({ table }) => (
-      <Checkbox
-        checked={
-          table.getIsAllPageRowsSelected() ||
-          (table.getIsSomePageRowsSelected() && "indeterminate")
-        }
-        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label="Select all"
-      />
-    ),
-    cell: ({ row }) => (
-      <Checkbox
-        checked={row.getIsSelected()}
-        onCheckedChange={(value) => row.toggleSelected(!!value)}
-        aria-label="Select row"
-      />
-    ),
-    size: "32px",
-    // minSize: 20,
-    // maxSize: 24,
-    enableSorting: false,
-    enableHiding: false,
-  },
-  { accessorKey: "id", header: "ID", size: "auto" },
-  { accessorKey: "document", header: "Document", size: "900px"},
-  {
-    accessorKey: "metadata",
-    header: "Metadata",
-    size: "auto",
-    cell: ({ getValue }) => {
-      const v = getValue()
-      return v ? <code className="text-xs">{JSON.stringify(v)}</code> : "—"
-    },
-  },
-]
 
 export default function Layout() {
   const [selected, setSelected] = useState(null)
@@ -73,13 +34,66 @@ export default function Layout() {
   const [openItemId, setOpenItemId] = useState(null)
   const [searchInput, setSearchInput] = useState("");
   const [searchMode, setSearchMode] = useState(["text"]);
-  const debouncedInput = useDebouncedValue(searchInput, 600)
+  const debouncedInput = useDebouncedValue(searchInput, 300)
 
   const itemsQuery  = useItems(selected?.name)
   const searchQuery = useSearch(selected?.name, debouncedInput, searchMode)
   const active = debouncedInput ? searchQuery : itemsQuery
   const { data: rows = [], isLoading, isError, error } = active
   const deleteItems = useDeleteItems(selected?.name)
+
+  const columns = useMemo(() => {
+    const cols = [
+      {
+        id: "select",
+        header: ({ table }) => (
+          <Checkbox
+            checked={
+              table.getIsAllPageRowsSelected() ||
+              (table.getIsSomePageRowsSelected() && "indeterminate")
+            }
+            onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+            aria-label="Select all"
+          />
+        ),
+        cell: ({ row }) => (
+          <Checkbox
+            checked={row.getIsSelected()}
+            onCheckedChange={(value) => row.toggleSelected(!!value)}
+            aria-label="Select row"
+          />
+        ),
+        size: "32px",
+        enableSorting: false,
+        enableHiding: false,
+      },
+      { accessorKey: "id", header: "ID", size: "auto" },
+      { accessorKey: "document", header: "Document", size: "900px" },
+      {
+        accessorKey: "metadata",
+        header: "Metadata",
+        size: "auto",
+        cell: ({ getValue }) => {
+          const v = getValue()
+          return v ? <code className="text-xs">{JSON.stringify(v)}</code> : "—"
+        },
+      },
+    ]
+
+    if (debouncedInput && searchMode[0] === "semantic") {
+      cols.push({
+        accessorKey: "distance",
+        header: "Distance",
+        size: "auto",
+        cell: ({ getValue }) => {
+          const v = getValue()
+          return typeof v === "number" ? v.toFixed(4) : "—"
+        },
+      })
+    }
+
+    return cols
+  }, [debouncedInput, searchMode])
 
 
 
@@ -111,6 +125,7 @@ export default function Layout() {
   })
 
 
+
   const selectedIds = Object.keys(rowSelection)
   const handleDelete = () => {
     if (selectedIds.length === 0) return
@@ -128,7 +143,7 @@ export default function Layout() {
         selected={selected}
         setSelected={setSelected}
       />
-      <SidebarInset className="flex flex-col min-h-svh min-w-0">
+      <SidebarInset className="flex flex-col h-svh min-w-0">
         <header className="flex h-14 items-center gap-2 px-4">
           <SidebarTrigger />
           <span className="text-sm font-medium">
@@ -142,6 +157,7 @@ export default function Layout() {
             setMode={setSearchMode}
             input={searchInput}
             setInput={setSearchInput}
+            disabled={!selected}
           />
         </div>
         <ResizablePanelGroup direction="horizontal" className="flex-1 min-h-0" autoSaveId="record-detail-layout">
@@ -154,6 +170,7 @@ export default function Layout() {
                   isError={isError}
                   error={error}
                   onRowClick={(row) => setOpenItemId(row.id)}
+                  openItemId={openItemId}
                 />
               ) : (
                 <p className="text-sm text-muted-foreground p-4">
