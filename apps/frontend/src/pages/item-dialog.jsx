@@ -79,6 +79,7 @@ function ItemDialog({ open, onOpenChange, collection }) {
               <Textarea 
                 id="document"
                 placeholder="Lorem ipsum dolor sit amet consectetur adipiscing elit..."
+                className={"field-sizing-fixed"}
                 {...register("document", {
                   required: "document is required"
                   })}/>
@@ -89,6 +90,7 @@ function ItemDialog({ open, onOpenChange, collection }) {
               <Textarea 
                 id="metadata"
                 placeholder="Record metadata"
+                className={"field-sizing-fixed"}
                 {...register("metadata", {
                   validate: (v) => {
                     if(!v.trim()) return true

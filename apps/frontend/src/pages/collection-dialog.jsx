@@ -102,6 +102,7 @@ function CollectionDialog({ open, onOpenChange, mode, initial }) {
               <Textarea 
                 id="metadata"
                 placeholder="Collection metadata"
+                className={"field-sizing-fixed"}
                 {...register("metadata", {
                   validate: (v) => {
                     if(!v.trim()) return true
