@@ -28,3 +28,19 @@ Open the printed Vite URL in your browser, then fill out the connection form:
 - **Self-hosted**: provide the Chroma URL (e.g. `http://localhost:8000`), tenant, and database.
 - **Chroma Cloud**: tick *ChromaCloud?* and provide your API key, tenant, and database.
 
+### Build for production
+
+```bash
+npm run build
+```
+
+This compiles the backend (`apps/backend/dist/`) and bundles the frontend (`apps/frontend/dist/`).
+
+Then start the server:
+
+```bash
+npm start
+```
+
+The Express server serves both the API and the frontend on `:3000`. Open `http://localhost:3000` in your browser.
+
