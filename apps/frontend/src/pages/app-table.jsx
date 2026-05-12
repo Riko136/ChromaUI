@@ -1,5 +1,4 @@
 import { flexRender } from "@tanstack/react-table"
-import { useState } from "react"
 
 import {
   Table,
