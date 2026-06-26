@@ -1,7 +1,7 @@
 
 import './App.css'
-import ConnectForm from './pages/connect-form'
-import Layout from './pages/layout'
+import ConnectForm from './components/connect-form';
+import Layout from './layout';
 import {Routes, Route } from "react-router";
 
 function App() {
