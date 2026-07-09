@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/field"
 import { Checkbox } from "@/components/ui/checkbox"
 
-function ConnectForm({onSubmit}) {
+function ConnectForm() {
     const {
         register,
         handleSubmit,
@@ -57,7 +57,6 @@ function ConnectForm({onSubmit}) {
             setConnectError(error ?? res.statusText)
             return
         }
-        onSubmit(body)
         navigate("/dashboard")
     }
 

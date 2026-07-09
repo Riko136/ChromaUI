@@ -160,7 +160,7 @@ export default function Layout() {
             disabled={!selected}
           />
         </div>
-        <ResizablePanelGroup direction="horizontal" className="flex-1 min-h-0" autoSaveId="record-detail-layout">
+        <ResizablePanelGroup direction="horizontal" className="flex-1 min-h-0">
           <ResizablePanel minSize={"50%"}>
             <main className="h-full min-w-0 overflow-x-auto [&_[data-slot=table-container]]:overflow-x-visible">
               {selected ? (
