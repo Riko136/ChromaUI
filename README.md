@@ -2,6 +2,12 @@
 
 A web-based admin UI for managing [ChromaDB](https://github.com/chroma-core/chroma) vector database instances. ChromaUI lets you connect to a local Chroma server or to Chroma Cloud, browse and manage your collections, inspect and edit records, and run text, regex, and semantic searches against your data — all from a modern browser interface.
 
+<img width="1913" height="1012" alt="Screenshot 2026-07-14 101644" src="https://github.com/user-attachments/assets/0d05525a-c862-4ca6-bb22-e5a66783936c" />
+
+<img width="1919" height="1013" alt="Screenshot 2026-07-14 102020" src="https://github.com/user-attachments/assets/790eeed6-eb6b-4d6b-b48e-ddaafefbf2db" />
+
+
+
 ## Getting Started
 
 ### Prerequisites
