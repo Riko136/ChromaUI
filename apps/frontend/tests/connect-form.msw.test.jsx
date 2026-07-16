@@ -7,11 +7,13 @@ import ConnectForm from '@/components/connect-form';
 
 const ip = "http://localhost:1234"
 
+const ipBad= "http://localhost:1111"
+
 const server = setupServer(
     http.post("/api/connect", async ({request}) => {
         const body = await request.json();
         if(body.url === ip) return new HttpResponse(null, { status: 200 })
-        new HttpResponse(null,{status: 500})
+        return HttpResponse.json({error: "failed to connect"}, {status: 401})
     }),
 );
 
@@ -42,7 +44,11 @@ async function setupSuccessCase() {
     await utils.clickConnect()
 }
 
-
+async function setupFailCase() {
+    const utils = setup()
+    await utils.changeIpInput(ipBad)
+    await utils.clickConnect()
+}
 
 describe("Connection E2E", () => {
     beforeAll(() => server.listen());
@@ -54,5 +60,9 @@ describe("Connection E2E", () => {
         expect(await screen.findByText("Dashboard Page")).toBeInTheDocument();
     })  
 
+    it("fails to connect successfully", async () => {
+        await setupFailCase()
+        expect((screen.getByRole('alert')).textContent.trim()).toEqual("failed to connect")
+    })
 
 })
