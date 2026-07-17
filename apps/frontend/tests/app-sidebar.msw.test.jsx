@@ -1,28 +1,36 @@
 import AppSidebar from "@/components/app-sidebar";
-import { findByText, render, screen } from "@testing-library/react";
+import { render, screen, waitFor  } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { setupServer } from "msw/node";
 import { http, HttpResponse } from "msw";
 import userEvent from '@testing-library/user-event'
-import { useState } from "react"
 import Layout from "@/layout";
 
-// const [selected, setSelected] = useState(null)
-// const [createOpen, setCreateOpen] = useState(false)
-// const [mode, setMode] = useState("")
+let collections = [{ id: 0, name: "Collection1" }];
 
 const server = setupServer(
-  http.get("/api/collections", () =>
-    HttpResponse.json([{ id: 0, name: "Collection1" }])
-  ),
+  http.get("/api/collections", () => HttpResponse.json(collections)),
 
   http.post("/api/collections", async ({ request }) => {
     const body = await request.json();
-    return HttpResponse.json({ id: 1, name: body.name, metadata: body.metadata }, { status: 201 });
+    const newCollection = { id: collections.length, name: body.name, metadata: body.metadata };
+    collections = [...collections, newCollection];
+    return new HttpResponse(null, { status: 201 });
   }),
 
-  http.delete("/api/collections/:name", () => HttpResponse(null, { status: 204 })),
+  http.delete("/api/collections/:name", ({ params }) => {
+    collections = collections.filter((c) => c.name !== params.name);
+    return new HttpResponse(null, { status: 204 });
+  }),
+
+  http.patch("/api/collections/:name", async ({request, params}) =>{
+    const body = await request.json()
+    collections.forEach((c) => c.name == params.name ? c.name = body.name : c)
+    return new HttpResponse(null, {status: 204})
+  }),
+  
+  http.get("/api/collections/:name/items", () => HttpResponse.json([])),
 );
 
 const queryClient = new QueryClient({
@@ -36,25 +44,43 @@ const setup = async () => {
         </QueryClientProvider>
     );
     const user = userEvent.setup()
+    const clickAddCollection = async () => await user.click(await screen.findByRole('button', { name: "Add collection" }))
+    const changeNameInput = async (value) => await user.type(await screen.findByRole('textbox', {name: /name/i}), value)
+    const clickSubmit = async () => await user.click(await screen.findByRole('button', { name: /^(save changes|create)$/i }))
     const collection1 = await screen.findByText("Collection1")
-    const clickAddCollection = async () => await user.click(screen.getByRole('button', { name:"Add collection" }))
-    const changeNameInput = async (value) => await user.type(await screen.findByText("Name"), value)
-    // const clickSubmit = async () => await user.click(screen.getByRole('button', { name: /^(save changes|create)$/i }))
-    const clickSubmit = async () => await user.click(await screen.findByText("Create"))
-
     const openContextWindow = async () => await user.pointer({keys: '[MouseRight]', target: collection1})
-    const clickDelete = async () => await user.click(screen.getByText("Delete Collection"))
-    const clickSettings = async () => await user.click(screen.getByText("Collection Settings"))
+    const clickDelete = async () => await user.click(await screen.findByText("Delete Collection"))
+    const clickSettings = async () => await user.click(await screen.findByText("Collection Settings"))
 
     return{
-        collection1,
         clickAddCollection,
         changeNameInput,
         clickSubmit,
         openContextWindow,
         clickDelete,
-        clickSettings
+        clickSettings,
     }
+}
+
+const setupNewCollection = async () => {
+    const utils = await setup()
+    await utils.clickAddCollection()
+    await utils.changeNameInput("Collection2")
+    await utils.clickSubmit()
+}
+
+const setupDeleteCollection = async () => {
+    const utils = await setup()
+    await utils.openContextWindow()
+    await utils.clickDelete()
+}
+
+const setupEditCollection = async () => {
+    const utils = await setup()
+    await utils.openContextWindow()
+    await utils.clickSettings()
+    await utils.changeNameInput("-edited")
+    await utils.clickSubmit()
 }
 
 describe("Collections End to End",() => {
@@ -63,6 +89,7 @@ describe("Collections End to End",() => {
     afterEach(() => {
         server.resetHandlers();
         queryClient.clear();
+        collections = [{ id: 0, name: "Collection1" }]
     });
     afterAll(() => server.close());
 
@@ -78,12 +105,26 @@ describe("Collections End to End",() => {
         expect(await screen.findByText("Collection1")).toBeInTheDocument();
     });
 
-    // it("successfully adds a collection and renders it", async () =>{
-    //     const utils = await setup()
-    //     utils.clickAddCollection()
-    //     utils.changeNameInput("Collection2")
-    //     utils.clickSubmit()
-    //     // expect(await screen.findByText("Collection2")).toBeInTheDocument()
-    //     expect(screen.getAllByRole('listitem', {Name: ""})).toHaveLength(2)
-    // })
+    it("successfully adds a new collection and renders it", async () =>{
+        await setupNewCollection()
+        expect(await screen.findByText("Collection2")).toBeInTheDocument()
+    })
+
+    it("successfully deletes a collection and renders it", async () => {
+        const confirmSpy = jest.spyOn(window, "confirm").mockReturnValue(true);
+
+        await setupDeleteCollection()
+ 
+        expect(confirmSpy).toHaveBeenCalled();
+        await waitFor(() => {
+            expect(screen.queryByText("Collection1")).not.toBeInTheDocument();
+        }); 
+        
+        confirmSpy.mockRestore();
+    })
+
+    it("successfully edits a collection and renders it", async () => {
+        await setupEditCollection()
+        expect(await screen.findByText("Collection1-edited")).toBeInTheDocument()
+    })
 })
