@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react"
+import { useState } from "react"
 import {
   getCoreRowModel,
   getPaginationRowModel,
@@ -7,7 +7,6 @@ import {
 
 import { Trash2, FilePlusCorner  } from "lucide-react"
 import { SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/sidebar"
-import { Checkbox } from "@/components/ui/checkbox"
 import { Button } from "@/components/ui/button"
 import AppSidebar from "./components/app-sidebar"
 import AppTable from "./components/app-table"
@@ -18,6 +17,7 @@ import { useDeleteItems, useItems, useSearch } from "@/lib/queries"
 import ItemDetailPanel from "./components/item-detail-panel"
 import SearchBar from "./components/search-bar"
 import { useDebouncedValue } from "@/hooks/use-debounced-value"
+import { useItemColumns } from "./hooks/use-item-columns"
 
 import {
   ResizableHandle,
@@ -30,7 +30,6 @@ export default function Layout() {
   const [createOpen, setCreateOpen] = useState(false)
   const [createItemOpen, setCreateItemOpen] = useState(false)
   const [mode, setMode] = useState("")
-  const [rowSelection, setRowSelection] = useState({})
   const [openItemId, setOpenItemId] = useState(null)
   const [searchInput, setSearchInput] = useState("");
   const [searchMode, setSearchMode] = useState(["text"]);
@@ -41,71 +40,7 @@ export default function Layout() {
   const active = debouncedInput ? searchQuery : itemsQuery
   const { data: rows = [], isLoading, isError, error } = active
   const deleteItems = useDeleteItems(selected?.name)
-
-  const columns = useMemo(() => {
-    const cols = [
-      {
-        id: "select",
-        header: ({ table }) => (
-          <Checkbox
-            checked={
-              table.getIsAllPageRowsSelected() ||
-              (table.getIsSomePageRowsSelected() && "indeterminate")
-            }
-            onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-            aria-label="Select all"
-          />
-        ),
-        cell: ({ row }) => (
-          <Checkbox
-            checked={row.getIsSelected()}
-            onCheckedChange={(value) => row.toggleSelected(!!value)}
-            aria-label="Select row"
-          />
-        ),
-        size: "32px",
-        enableSorting: false,
-        enableHiding: false,
-      },
-      { accessorKey: "id", header: "ID", size: "auto" },
-      { accessorKey: "document", header: "Document", size: "900px" },
-      {
-        accessorKey: "metadata",
-        header: "Metadata",
-        size: "auto",
-        cell: ({ getValue }) => {
-          const v = getValue()
-          return v ? <code className="text-xs">{JSON.stringify(v)}</code> : "—"
-        },
-      },
-    ]
-
-    if (debouncedInput && searchMode[0] === "semantic") {
-      cols.push({
-        accessorKey: "distance",
-        header: "Distance",
-        size: "auto",
-        cell: ({ getValue }) => {
-          const v = getValue()
-          return typeof v === "number" ? v.toFixed(4) : "—"
-        },
-      })
-    }
-
-    return cols
-  }, [debouncedInput, searchMode])
-
-
-
-  // const rows = useMemo(() => {
-  //   if (!data?.ids) return []
-  //   return data.ids.map((id, i) => ({
-  //     id,
-  //     document: data.documents?.[i] ?? "",
-  //     metadata: data.metadatas?.[i] ?? null,
-  //     embedding: data.embeddings?.[i] ?? [],
-  //   }))
-  // }, [data])
+  const columns = useItemColumns(debouncedInput, searchMode)
 
   const openItem = openItemId ? rows.find((r) => r.id === openItemId) ?? null : null
 
@@ -115,23 +50,16 @@ export default function Layout() {
     getRowId: (row) => row.id,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
-    onRowSelectionChange: setRowSelection,
-    state: { rowSelection },
-    // defaultColumn: {
-    //   minSize: 10,
-    //   size: 500,
-    //   maxSize: 2000,
-    // },
   })
 
 
 
-  const selectedIds = Object.keys(rowSelection)
+  const selectedIds = Object.keys(table.getState().rowSelection)
   const handleDelete = () => {
     if (selectedIds.length === 0) return
     if (!window.confirm(`Delete ${selectedIds.length} item(s)? This cannot be undone.`)) return
     deleteItems.mutate(selectedIds, {
-      onSuccess: () => setRowSelection({}),
+      onSuccess: () => table.setRowSelection({}),
     })
   }
 

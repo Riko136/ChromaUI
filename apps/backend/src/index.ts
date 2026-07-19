@@ -26,11 +26,15 @@ app.use('/api/collections', collectionsRouter);
 app.use('/api/collections', itemsRouter);
 app.use('/api/collections', queryRouter);
 
+if(process.env.NODE_ENV === 'production'){
+  const __dirname = path.dirname(fileURLToPath(import.meta.url));
+  const frontendDist = path.resolve(__dirname, '../../frontend/dist');
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const frontendDist = path.resolve(__dirname, '../../frontend/dist');
+  app.use(express.static(frontendDist));
+  app.use((_req, res) => res.sendFile(path.join(frontendDist, 'index.html')));
+} else {
+  app.use((_req, res) => res.status(404).send('Not serving frontend in dev mode'));
+}
 
-app.use(express.static(frontendDist));
-app.use((_req, res) => res.sendFile(path.join(frontendDist, 'index.html')));
 
 app.listen(3000, () => console.log('Backend running on :3000'));
