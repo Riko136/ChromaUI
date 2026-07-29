@@ -141,7 +141,7 @@ export default function Layout() {
                 disabled={createItemOpen}  
               >
                 <FilePlusCorner  className="size-4"/> 
-                <span className="sr-only">Add collection</span>
+                <span className="sr-only">Add item</span>
               </Button>
             }
           </div>
