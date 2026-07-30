@@ -125,7 +125,7 @@ const setupDeleteItem = async() =>{
 const setupEditItem = async() => {
     const utils = await setup()
     await utils.selectRow()
-    screen.debug(undefined, 300000)
+    // screen.debug(undefined, 300000)
     await utils.clickEditDoc()
     await utils.editDocumentInput(" edited")
     await utils.clickSave()
@@ -167,6 +167,10 @@ describe("Items End to End",() => {
         confirmSpy.mockRestore(); 
     })
 
+    // it("edits an item and renders it successfully", async() => {
+    //     await setupEditItem()
+    //     expect(await screen.findByText("Test doc edited")).toBeInTheDocument()
 
+    // })
 
 })

@@ -42,7 +42,7 @@ export default function Layout() {
   const deleteItems = useDeleteItems(selected?.name)
   const columns = useItemColumns(debouncedInput, searchMode)
 
-  const openItem = openItemId ? rows.find((r) => r.id === openItemId) ?? null : null
+  const openItem = openItemId!=null ? rows.find((r) => r.id === openItemId) ?? null : null
 
   const table = useReactTable({
     data: rows,
@@ -97,7 +97,11 @@ export default function Layout() {
                   isLoading={isLoading}
                   isError={isError}
                   error={error}
-                  onRowClick={(row) => setOpenItemId(row.id)}
+                  onRowClick={
+                    (row) => {
+                      console.log("CLICK FIRED, row:", row)
+                      setOpenItemId(row.id)
+                    }}
                   openItemId={openItemId}
                 />
               ) : (
