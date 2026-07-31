@@ -168,9 +168,8 @@ describe("Items End to End",() => {
     })
 
     it("edits an item and renders it successfully", async() => {
-        await setupEditItem()
-        const matches = await screen.findAllByText("edited Test doc")
-        expect(matches[0]).toBeInTheDocument()
+        await setupEditItem() 
+        expect(await screen.findAllByText("edited Test doc")).toHaveLength(2)
     })
 
 })

@@ -25,7 +25,7 @@ export default function SearchBar({input, setInput, mode, setMode, disabled}){
             </InputGroupAddon>
             
             <InputGroupAddon align="inline-end right-0" >
-                {input && <InputGroupButton variant="ghost" onClick={() => setInput("")}><X /></InputGroupButton>}
+                {input && <InputGroupButton variant="ghost" aria-label="Clear search" onClick={() => setInput("")}><X /></InputGroupButton>}
                 <ToggleGroup disabled={disabled} variant="outline" type="single" defaultValue={["text"]} value={mode} onValueChange={(value) => value[0] && setMode(value)}>
                     <ToggleGroupItem value={"text"} >Text</ToggleGroupItem>
                     <ToggleGroupItem value={"semantic"}>Semantic</ToggleGroupItem>
