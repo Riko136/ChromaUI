@@ -152,7 +152,7 @@ function EditableField({
   return (
     <Field className="group">
       <div className="flex items-center justify-between min-h-7">
-        <FieldLabel>{label}</FieldLabel>
+        <FieldLabel for={label}>{label}</FieldLabel>
         {!editing && (
           <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
             <Button
@@ -185,6 +185,7 @@ function EditableField({
         <div className="flex flex-col gap-2">
           {multiline ? (
             <Textarea
+              id={label}
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
               onKeyDown={onKeyDown}

@@ -10,7 +10,7 @@ let item1 = {id: 0, document: "Test doc", embedding: [0,0,0], metadata: {"author
 let collections = [{ id: 0, name: "Collection1", items: [item1] }];
 
 const server = setupServer(
-    http.get("/api/collections", () => HttpResponse.json(collections)),
+    http.get("/api/collections", () => {return HttpResponse.json(collections)}),
 
     http.get("/api/collections/:name/items", ({params}) => {
         const collection = collections.find((c) => c.name == params.name)
@@ -23,7 +23,7 @@ const server = setupServer(
         return new HttpResponse(null, { status: 204 });   
     }),
 
-    http.patch("/api/collections/:name/:id", async ({request, params}) =>{
+    http.patch("/api/collections/:name/items/:id", async ({request, params}) =>{
         const { document, metadata } = await request.json()
         const collection = collections.find((c) => c.name == params.name)
         const item = collection.items.find((i) => i.id == params.id)
@@ -82,9 +82,12 @@ const setup = async () => {
     const selectRow = async () =>
         await user.click(await screen.findByText("Test doc"))
     const clickEditDoc = async () =>
-        await user.click(await screen.findByRole('button', {name : /edit/i}))
-    const editDocumentInput = async (value) =>
-        await user.type(await screen.findByRole('textbox', {name:/document/i}), value)
+        await user.click((await screen.findAllByRole('button', { name: /edit/i }))[0])
+    const editDocumentInput = async (value) => {
+        const input = await screen.findByLabelText("Document");
+        await user.type(input, value, { skipClick: true });
+        console.log("value after:", input.value);
+    }
     const clickSave = async () =>
         await user.click(await screen.findByRole('button', {name: /save/i}))
 
@@ -107,12 +110,10 @@ const setup = async () => {
 const setupNewItem = async () => {
     const utils = await setup()
     await utils.clickAddItem()
-    // screen.debug(undefined, 300000)
     await utils.changeItemIdInput("1")
     await utils.changeDocumentInput("Test doc2")
-    // await utils.changeMetadataInput('{{"new":"true"}')
     await utils.clickSubmitItem()
-    // screen.debug(undefined, 300000)
+
 
 }
 
@@ -125,9 +126,8 @@ const setupDeleteItem = async() =>{
 const setupEditItem = async() => {
     const utils = await setup()
     await utils.selectRow()
-    // screen.debug(undefined, 300000)
     await utils.clickEditDoc()
-    await utils.editDocumentInput(" edited")
+    await utils.editDocumentInput("edited ")
     await utils.clickSave()
 }
 
@@ -167,10 +167,10 @@ describe("Items End to End",() => {
         confirmSpy.mockRestore(); 
     })
 
-    // it("edits an item and renders it successfully", async() => {
-    //     await setupEditItem()
-    //     expect(await screen.findByText("Test doc edited")).toBeInTheDocument()
-
-    // })
+    it("edits an item and renders it successfully", async() => {
+        await setupEditItem()
+        const matches = await screen.findAllByText("edited Test doc")
+        expect(matches[0]).toBeInTheDocument()
+    })
 
 })
