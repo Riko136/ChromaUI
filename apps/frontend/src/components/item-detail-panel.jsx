@@ -152,7 +152,7 @@ function EditableField({
   return (
     <Field className="group">
       <div className="flex items-center justify-between min-h-7">
-        <FieldLabel for={label}>{label}</FieldLabel>
+        <FieldLabel htmlFor={label}>{label}</FieldLabel>
         {!editing && (
           <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
             <Button
